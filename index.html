@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore Wi-Fi channel changes with an interactive simulation and an ESP32 receiver.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="stylesheet" href="./style.css">
+  <title>Wi-Fi CSI Lab</title>
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="./"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span> Wi-Fi CSI Lab</a>
+      <span class="local"><i aria-hidden="true"></i> Local processing</span>
+    </div>
+  </header>
+  <main class="shell">
+    <section class="intro" aria-labelledby="title">
+      <div><h1 id="title">Wi-Fi sensing lab</h1><p>Measure how motion and attenuation affect a Wi-Fi link.</p></div>
+      <span id="source" class="source">Simulation</span>
+    </section>
+    <section class="metrics" aria-label="Signal metrics">
+      <dl class="metric"><dt>Link state</dt><dd id="state">Calibrating</dd></dl>
+      <dl class="metric"><dt>Variation score</dt><dd id="score">—</dd></dl>
+      <dl class="metric"><dt>Detection threshold</dt><dd id="threshold">—</dd></dl>
+      <dl class="metric"><dt>Signal strength</dt><dd id="rssi">—</dd></dl>
+    </section>
+    <div class="workspace">
+      <div class="charts">
+        <section class="panel" aria-labelledby="variation-title">
+          <header class="panel-heading"><div><h2 id="variation-title">Link variation</h2><p>Distance from the calibrated signal shape</p></div><span class="threshold-key"><i aria-hidden="true"></i> Threshold</span></header>
+          <canvas id="variation" class="variation" role="img" aria-label="Graph of recent variation scores and the detection threshold"></canvas>
+        </section>
+        <section class="panel" aria-labelledby="heatmap-title">
+          <header class="panel-heading"><div><h2 id="heatmap-title">Subcarrier heatmap</h2><p>Amplitude relative to the baseline</p></div><div class="heat-key" aria-label="Lower and higher amplitude"><span>Lower</span><i aria-hidden="true"></i><span>Higher</span></div></header>
+          <canvas id="heatmap" class="heatmap" role="img" aria-label="Heatmap of amplitude change for 51 Wi-Fi subcarriers across recent samples"></canvas>
+        </section>
+      </div>
+      <aside class="panel controls" aria-labelledby="controls-title">
+        <div class="panel-heading"><h2 id="controls-title">Experiment</h2></div>
+        <div id="simulation-controls" class="control-block">
+          <label class="movement"><input id="motion" type="checkbox" checked> Simulate movement</label>
+          <label class="range-label" for="loss">Simulated wall loss <output id="loss-value" for="loss">7 dB</output></label>
+          <input id="loss" type="range" min="0" max="32" value="7" aria-label="Simulated wall loss">
+          <p>Higher loss weakens the moving reflection in the model.</p>
+        </div>
+        <div class="control-block baseline">
+          <h3>Baseline</h3>
+          <p id="baseline-status" role="status"></p>
+          <progress id="calibration" max="48" value="0" aria-label="Baseline sample progress"></progress>
+          <button id="calibrate" type="button">Recalibrate</button>
+        </div>
+        <div class="control-block device">
+          <h3>ESP32 receiver</h3>
+          <p id="device-status" role="status">Connect a flashed board over USB for live CSI samples.</p>
+          <button id="connect" class="primary" type="button">Connect ESP32</button>
+          <button id="simulation" type="button" hidden>Return to simulation</button>
+          <div id="network" class="network" hidden>
+            <p>Join <strong>CSI-Lab</strong>, then run <code>python probe.py</code>.</p>
+            <label for="password">Temporary Wi-Fi password</label>
+            <input id="password" type="password" readonly autocomplete="off" spellcheck="false">
+            <label class="reveal"><input id="show-password" type="checkbox"> Show password</label>
+          </div>
+        </div>
+        <div class="control-block export">
+          <button id="export" type="button">Export metrics <span aria-hidden="true">↓</span></button>
+        </div>
+      </aside>
+    </div>
+    <section class="panel trials" aria-labelledby="trials-title">
+      <header class="panel-heading">
+        <div><h2 id="trials-title">Compare trials</h2><p>Record 60 samples per condition and compare the same measurements side by side.</p></div>
+        <button id="clear-trials" type="button" disabled>Clear trials</button>
+      </header>
+      <div class="trial-cards">
+        <section class="trial-card" aria-labelledby="trial-title-a">
+          <div class="trial-head"><h3 id="trial-title-a">Trial A</h3><button id="record-a" type="button">Record A</button></div>
+          <p id="condition-a" class="trial-condition">No recording</p>
+          <dl id="result-a" class="trial-readings" hidden></dl>
+        </section>
+        <section class="trial-card" aria-labelledby="trial-title-b">
+          <div class="trial-head"><h3 id="trial-title-b">Trial B</h3><button id="record-b" type="button">Record B</button></div>
+          <p id="condition-b" class="trial-condition">No recording</p>
+          <dl id="result-b" class="trial-readings" hidden></dl>
+        </section>
+      </div>
+      <div class="trial-status">
+        <p id="trial-status" role="status">Choose a condition and record Trial A.</p>
+        <progress id="trial-progress" max="60" value="0" aria-label="Trial recording progress" hidden></progress>
+        <button id="cancel-trial" type="button" hidden>Cancel trial</button>
+      </div>
+    </section>
+    <footer>Link changes can come from motion, interference, or changes to the setup.</footer>
+    <noscript><p>Enable JavaScript to run the lab.</p></noscript>
+  </main>
+</body>
+</html>
